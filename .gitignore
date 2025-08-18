@@ -1,0 +1,21 @@
+@'
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Node / n8n exports
+node_modules/
+.n8n/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+
+# Docker volumes (se tiver volumes locais)
+data/
+'@ | Out-File -Encoding utf8 .gitignore

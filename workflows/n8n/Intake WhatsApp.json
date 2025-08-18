@@ -1,0 +1,104 @@
+{
+  "name": "Intake WhatsApp",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "whatsapp",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -256,
+        -64
+      ],
+      "id": "f8b6df5b-d446-46de-8dc3-5b3718aa426c",
+      "name": "Webhook",
+      "webhookId": "ec81b3e5-1304-434c-9144-baee237ce957"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:3000/api/queue/add",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "=phone",
+              "value": "=={{ $json.body.phone }}"
+            },
+            {
+              "name": "=message",
+              "value": "=={{ $json.body.message }}"
+            },
+            {
+              "name": "=priority",
+              "value": "={{ $json.priority || 5 }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -32,
+        -96
+      ],
+      "id": "f7c8afe8-8b80-43c1-9a43-fb69f5a1125e",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        208,
+        -96
+      ],
+      "id": "d4083179-319d-427b-9912-10226f08b482",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "9db20a5f-0dd7-4aa7-a51b-2a9af3b7b821",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b00eda990e0e95a363114f1f5fec77dee24e8cf03a04dd717c51b8dd21427e42"
+  },
+  "id": "BNBa2CpTPFVqwi1y",
+  "tags": []
+}

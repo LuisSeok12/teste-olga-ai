@@ -1,0 +1,46 @@
+version: "3.9"
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: olga
+      POSTGRES_PASSWORD: olga
+      POSTGRES_DB: olga_ai
+    ports:
+      - "5432:5432"
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+
+  adminer:
+    image: adminer
+    depends_on:
+      - db
+    ports:
+      - "8080:8080"
+
+  n8n:
+    image: n8nio/n8n:latest
+    environment:
+      - N8N_HOST=localhost
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+    ports:
+      - "5678:5678"
+    volumes:
+      - n8n_data:/home/node/.n8n
+
+  kestra:
+    image: kestra/kestra:latest-full
+    ports:
+      - "8082:8080"
+    environment:
+      - KESTRA_CONFIGURATION_K8S_ENABLED=false
+    volumes:
+      - kestra-data:/app/storage
+    command: ["server", "standalone"]
+    restart: unless-stopped
+
+volumes:
+  dbdata:
+  n8n_data:
+  kestra-data:

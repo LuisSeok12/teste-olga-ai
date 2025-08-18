@@ -1,0 +1,489 @@
+{
+  "name": "Worker",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 1
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "bc2ca1d7-4ca8-4185-b3f4-f1a8bde0ba94",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:3000/api/queue/next",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "batchSize",
+              "value": "=5"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        192,
+        -160
+      ],
+      "id": "36f48f70-9cd9-48fe-ab62-8f41052202b4",
+      "name": "Queue Next"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:3000/api/router/route",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "phone",
+              "value": "={{ $json.phone }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ $json.message }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        544,
+        -96
+      ],
+      "id": "34741226-46b0-43ef-8f23-4185808a41ed",
+      "name": "Route",
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "6c3c1a0c-dc42-4853-a5d6-fc77da641cc2",
+              "leftValue": "={{ $json.flow }}",
+              "rightValue": "SINISTRO",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "3d751552-f982-4be3-aa85-56880725f039",
+              "leftValue": "={{ $json.flow }}",
+              "rightValue": "SINISTRO_INTAKE",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        944,
+        -48
+      ],
+      "id": "1dd5315e-a34b-46b9-9f2b-a65b88313cde",
+      "name": "Branch"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://host.docker.internal:3000/api/queue/{{$node[\"ForEach\"].json.id}}/complete\n",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "status",
+              "value": "==\"OK\""
+            },
+            {
+              "name": "protocolo",
+              "value": "={{ \"SIN\" + $json.id.toString().padStart(6,\"0\") }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1168,
+        -192
+      ],
+      "id": "b49ca678-891b-4cb9-9c83-ef4d75324103",
+      "name": "Process Sinistro (mock)",
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://host.docker.internal:3000/api/queue/{{$node[\"ForEach\"].json.id}}/complete\n",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "status",
+              "value": "=\"OK\""
+            },
+            {
+              "name": "info",
+              "value": "==\"finalizado pelo worker\""
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1168,
+        96
+      ],
+      "id": "efd82f72-9440-420c-a4f1-fb6632d6c53f",
+      "name": "Process Outros (mock)",
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1840,
+        96
+      ],
+      "id": "9ad0e8fa-c2d9-4af6-aa30-d3597411296b",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://host.docker.internal:3000/api/queue/{{$node[\"ForEach\"].json.id}}/error\n",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"error\": \"={{ $json.error?.message || $json.error || ($json.statusCode ? ('HTTP ' + $json.statusCode) : '') || 'unknown' }}\"\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1136,
+        -480
+      ],
+      "id": "be95e0fb-d609-4191-8dff-055d08778a50",
+      "name": "Mark Error"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "28783760-b497-4387-b653-aa60544438c5",
+              "leftValue": "={{ $json.statusCode || 0 }}",
+              "rightValue": 400,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        736,
+        -64
+      ],
+      "id": "574b95a3-ada6-44d9-afcd-8f368ede7f8d",
+      "name": "Has Error?"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c939ca1a-ad93-4d23-b737-c0be4ee8ebb0",
+              "leftValue": "={{ $json.error || $json.statusCode >= 400 }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1488,
+        -400
+      ],
+      "id": "558f03be-b124-4915-998a-1371a27e54e6",
+      "name": "Has Error?(Sinistro"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "f769fc9b-601a-46c5-a2aa-efbc726d9471",
+              "leftValue": "={{ $json.error || $json.statusCode >= 400 }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1504,
+        80
+      ],
+      "id": "0bed8efe-a300-4cd5-b902-42e251fa7a33",
+      "name": "Has Error? (Outros)"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        304,
+        48
+      ],
+      "id": "473f566b-89fe-4271-a7fa-6b5bfba7e7b9",
+      "name": "ForEach"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Queue Next",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Queue Next": {
+      "main": [
+        [
+          {
+            "node": "ForEach",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route": {
+      "main": [
+        [
+          {
+            "node": "Has Error?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Branch": {
+      "main": [
+        [
+          {
+            "node": "Process Sinistro (mock)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Process Outros (mock)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Sinistro (mock)": {
+      "main": [
+        [
+          {
+            "node": "Has Error?(Sinistro",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Outros (mock)": {
+      "main": [
+        [
+          {
+            "node": "Has Error? (Outros)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "No Operation, do nothing": {
+      "main": [
+        [
+          {
+            "node": "ForEach",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Error?": {
+      "main": [
+        [
+          {
+            "node": "Mark Error",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Branch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Error?(Sinistro": {
+      "main": [
+        [
+          {
+            "node": "Mark Error",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Error? (Outros)": {
+      "main": [
+        [
+          {
+            "node": "Mark Error",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ForEach": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Route",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "993e068d-7d18-4469-ad9a-01037a0fdf7c",
+  "meta": {
+    "instanceId": "b00eda990e0e95a363114f1f5fec77dee24e8cf03a04dd717c51b8dd21427e42"
+  },
+  "id": "8ybhaWOsbmdX0bSJ",
+  "tags": []
+}
