@@ -128,7 +128,7 @@
           "parameters": [
             {
               "name": "status",
-              "value": "==\"OK\""
+              "value": "=\"OK\""
             },
             {
               "name": "protocolo",
