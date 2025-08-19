@@ -1,6 +1,6 @@
 # Teste Técnico - Olga AI
 
-Este projeto implementa um fluxo de automação para triagem e processamento de atendimentos em fila, utilizando **n8n**, **PostgreSQL** e **Docker**.
+Este é um teste tecnico que vai ser apagado e implementa um fluxo de automação para triagem e processamento de atendimentos em fila, utilizando **n8n**, **PostgreSQL** e **Docker**.
 
 ## 🚀 Tecnologias
 - [Docker](https://www.docker.com/) para orquestração
