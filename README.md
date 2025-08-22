@@ -2,18 +2,18 @@
 
 Este é um teste tecnico que vai ser apagado e implementa um fluxo de automação para triagem e processamento de atendimentos em fila, utilizando **n8n**, **PostgreSQL** e **Docker**.
 
-## 🚀 Tecnologias
+## Tecnologias
 - [Docker](https://www.docker.com/) para orquestração
 - [PostgreSQL](https://www.postgresql.org/) como banco de dados
 - [n8n](https://n8n.io/) para orquestração de workflows
 - API interna mockada para simulação de processamento
 
-## 📂 Estrutura
+## Estrutura
 - `docker/` → configurações do ambiente
 - `n8n/` → export dos workflows criados e testados
 - `docs/` → documentação técnica, diagramas e decisões
 
-## ⚙️ Como rodar
+## Como rodar
 1. Subir containers:
    ```bash
    docker compose -f docker/docker-compose.yml up -d
@@ -31,7 +31,7 @@ Este é um teste tecnico que vai ser apagado e implementa um fluxo de automaçã
      psql -U olga -d olga_ai -c "SELECT * FROM atendimento_queue ORDER BY id DESC LIMIT 10;"
    ```
 
-## 📊 Fluxo n8n
+## Fluxo n8n
 
 O workflow implementa:
 
@@ -44,13 +44,13 @@ O workflow implementa:
 
 ![Fluxo](docs/fluxo.png)
 
-## ✅ Status
+## Status
 
 * Fluxo **n8n** validado e executando corretamente.
 * Integração com DB funcionando.
 * **Kestra** deixado de fora. Documentado em `docs/decisoes.md`.
 
-## 📌 Próximos passos
+## Próximos passos
 
 * Melhorias de logging
 * Expandir testes automatizados
@@ -59,7 +59,7 @@ O workflow implementa:
 
 ---
 
-### 📝 Exemplo de **docs/arquitetura.md**
+### Exemplo de **docs/arquitetura.md**
 
 ```markdown
 # Arquitetura da Solução
